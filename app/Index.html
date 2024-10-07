@@ -1,8 +1,50 @@
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wyrm Chat Room</title>
   <link rel="stylesheet" href="https://github.com/WyrmPortal/WyrmPortal.github.io/blob/main/app/source/style.css">
-  </head>
-  <body>
-    <h1>Wyrm</h1>
-  </body>
+</head>
+<body>
+    <header>
+        <h1>Wyrm Chat Room</h1>
+    </header>
+    <div id="container">
+        <div id="sidebar">
+            <h2>Chat Rooms</h2>
+            <div class="chat-room" onclick="switchRoom('General')">General</div>
+            <div class="chat-room" onclick="switchRoom('Gaming')">Gaming</div>
+            <div class="chat-room" onclick="switchRoom('Tech')">Tech</div>
+            <div class="chat-room" onclick="switchRoom('Art')">Art</div>
+        </div>
+        <div id="chat-window">
+            <div id="messages">
+                <p>Welcome to the General chat room!</p>
+            </div>
+            <div id="input-container">
+                <input type="text" id="message-input" placeholder="Type your message here..." />
+                <button id="send-button" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchRoom(room) {
+            const messages = document.getElementById('messages');
+            messages.innerHTML = `<p>Welcome to the ${room} chat room!</p>`;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value;
+            if (message) {
+                const messages = document.getElementById('messages');
+                messages.innerHTML += `<p>${message}</p>`;
+                input.value = '';
+                messages.scrollTop = messages.scrollHeight; // Scroll to the bottom
+            }
+        }
+    </script>
+</body>
 </html>
