@@ -1,2 +1,1 @@
-# WyrmPortal.github.io
-WyrmPortal is an Online Social Chat Hangout!
+Huh? Page Not Found. Try going [here](https://wyrmportal.github.io/app)
