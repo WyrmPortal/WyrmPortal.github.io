@@ -14,11 +14,17 @@
         header {
             background-color: #2E003E;
             padding: 15px;
-            text-align: center;
+            display: flex;
+            align-items: center;
         }
         h1 {
             margin: 0;
             color: #C0C0C0;
+            margin-left: 10px; /* Adjust spacing for the logo */
+        }
+        #logo {
+            width: 40px; /* Adjust the logo size */
+            height: 40px; /* Adjust the logo size */
         }
         #container {
             display: flex;
@@ -112,10 +118,22 @@
         #set-username-button:hover {
             background-color: #3E0050;
         }
+        .user-badge {
+            color: gold; /* Color for badges */
+            margin-left: 5px;
+            font-size: 0.8em; /* Smaller font size for badges */
+        }
+        .profile-pic {
+            width: 30px; /* Profile picture size */
+            height: 30px; /* Profile picture size */
+            border-radius: 50%; /* Make it circular */
+            vertical-align: middle; /* Align with text */
+        }
     </style>
 </head>
 <body>
     <header>
+        <img id="logo" src="https://via.placeholder.com/40" alt="Wyrm Logo" /> <!-- Placeholder logo -->
         <h1>Wyrm Chat Room</h1>
     </header>
     <div id="container">
@@ -148,8 +166,6 @@
 
         function switchRoom(room) {
             currentRoom = room;
-            const messages = document.getElementById('messages');
-            messages.innerHTML = `<p>Welcome to the ${room} chat room!</p>`;
             loadMessages();
         }
 
@@ -171,12 +187,10 @@
             const input = document.getElementById('message-input');
             const message = input.value;
             if (message && username) {
-                const messages = document.getElementById('messages');
                 const messageId = messagesData.length; // Get message ID based on current length
                 messagesData.push({ id: messageId, username: username, content: message }); // Save message
                 input.value = '';
                 displayMessages();
-                messages.scrollTop = messages.scrollHeight; // Scroll to the bottom
             }
         }
 
@@ -185,216 +199,14 @@
             messages.innerHTML = ''; // Clear current messages
             messagesData.forEach(msg => {
                 const messageElement = document.createElement('p');
-                messageElement.innerHTML = `<strong>${msg.username}:</strong> ${msg.content} <button onclick="deleteMessage(${msg.id})" style="color: #C0C0C0; background: none; border: none; cursor: pointer;">&#10006;</button>`;
+                messageElement.innerHTML = `
+                    <img class="profile-pic" src="https://via.placeholder.com/30" alt="Profile Picture" />
+                    <strong>${msg.username}</strong>: ${msg.content} 
+                    <button onclick="deleteMessage(${msg.id})" style="color: #C0C0C0; background: none; border: none; cursor: pointer;">&#10006;</button>
+                `;
                 messages.appendChild(messageElement);
             });
-        }
-
-        function deleteMessage(id) {
-            const messageIndex = messagesData.findIndex(msg => msg.id === id);
-            if (messageIndex !== -1) {
-                messagesData.splice(messageIndex, 1); // Remove the message
-                displayMessages(); // Update the displayed messages
-            }
-        }
-
-        function loadMessages() {
-            const messages = document.getElementById('messages');
-            messages.innerHTML = `<p>Welcome to the ${currentRoom} chat room!</p>`;
-            displayMessages();
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wyrm Chat Room</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background: linear-gradient(180deg, #1B0030, #000000);
-            color: #C0C0C0;
-        }
-        header {
-            background-color: #2E003E;
-            padding: 15px;
-            text-align: center;
-        }
-        h1 {
-            margin: 0;
-            color: #C0C0C0;
-        }
-        #container {
-            display: flex;
-            height: 80vh;
-        }
-        #sidebar {
-            width: 250px;
-            background-color: #2E003E;
-            padding: 15px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-        }
-        #sidebar h2 {
-            color: #C0C0C0;
-        }
-        .chat-room {
-            background-color: #1B0030;
-            color: #C0C0C0;
-            margin: 10px 0;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        .chat-room:hover {
-            background-color: #3E0050;
-        }
-        #chat-window {
-            flex: 1;
-            padding: 15px;
-            background-color: #1B0030;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid #C0C0C0;
-        }
-        #messages {
-            flex: 1;
-            overflow-y: auto;
-            border: 1px solid #C0C0C0;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #2E003E;
-            color: #C0C0C0;
-            border-radius: 5px;
-        }
-        #input-container {
-            display: flex;
-        }
-        #message-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #C0C0C0;
-            border-radius: 5px;
-            background-color: #1B0030;
-            color: #C0C0C0;
-        }
-        #send-button {
-            padding: 10px;
-            margin-left: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #2E003E;
-            color: #C0C0C0;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        #send-button:hover {
-            background-color: #3E0050;
-        }
-        #username-container {
-            margin-bottom: 15px;
-            display: flex;
-        }
-        #username-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #C0C0C0;
-            border-radius: 5px;
-            background-color: #1B0030;
-            color: #C0C0C0;
-            margin-right: 10px;
-        }
-        #set-username-button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #2E003E;
-            color: #C0C0C0;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        #set-username-button:hover {
-            background-color: #3E0050;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Wyrm Chat Room</h1>
-    </header>
-    <div id="container">
-        <div id="sidebar">
-            <h2>Chat Rooms</h2>
-            <div class="chat-room" onclick="switchRoom('General')">General</div>
-            <div class="chat-room" onclick="switchRoom('Gaming')">Gaming</div>
-            <div class="chat-room" onclick="switchRoom('Tech')">Tech</div>
-            <div class="chat-room" onclick="switchRoom('Art')">Art</div>
-        </div>
-        <div id="chat-window">
-            <div id="username-container">
-                <input type="text" id="username-input" placeholder="Set your username..." />
-                <button id="set-username-button" onclick="setUsername()">Set Username</button>
-            </div>
-            <div id="messages">
-                <p>Welcome to the General chat room! Please set your username to start chatting.</p>
-            </div>
-            <div id="input-container">
-                <input type="text" id="message-input" placeholder="Type your message here..." disabled />
-                <button id="send-button" onclick="sendMessage()" disabled>Send</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let currentRoom = 'General';
-        let username = '';
-        const messagesData = [];
-
-        function switchRoom(room) {
-            currentRoom = room;
-            const messages = document.getElementById('messages');
-            messages.innerHTML = `<p>Welcome to the ${room} chat room!</p>`;
-            loadMessages();
-        }
-
-        function setUsername() {
-            username = document.getElementById('username-input').value;
-            const messageInput = document.getElementById('message-input');
-            const sendButton = document.getElementById('send-button');
-            const usernameContainer = document.getElementById('username-container');
-
-            if (username) {
-                messageInput.disabled = false;
-                sendButton.disabled = false;
-                usernameContainer.style.display = 'none'; // Hide username input after setting it
-                loadMessages();
-            }
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('message-input');
-            const message = input.value;
-            if (message && username) {
-                const messages = document.getElementById('messages');
-                const messageId = messagesData.length; // Get message ID based on current length
-                messagesData.push({ id: messageId, username: username, content: message }); // Save message
-                input.value = '';
-                displayMessages();
-                messages.scrollTop = messages.scrollHeight; // Scroll to the bottom
-            }
-        }
-
-        function displayMessages() {
-            const messages = document.getElementById('messages');
-            messages.innerHTML = ''; // Clear current messages
-            messagesData.forEach(msg => {
-                const messageElement = document.createElement('p');
-                messageElement.innerHTML = `<strong>${msg.username}:</strong> ${msg.content} <button onclick="deleteMessage(${msg.id})" style="color: #C0C0C0; background: none; border: none; cursor: pointer;">&#10006;</button>`;
-                messages.appendChild(messageElement);
-            });
+            messages.scrollTop = messages.scrollHeight; // Scroll to the bottom
         }
 
         function deleteMessage(id) {
