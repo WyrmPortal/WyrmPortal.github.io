@@ -1,1 +1,4 @@
 background: linear-gradient(180deg, #1B0030, #000000);
+body, h1, h2, h3, h4, h5, h6, p, span, a, div {
+    color: #C0C0C0;
+}
