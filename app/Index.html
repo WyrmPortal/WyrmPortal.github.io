@@ -96,15 +96,16 @@
         #username-container {
             margin-bottom: 15px;
             display: flex;
+            flex-direction: column;
         }
-        #username-input {
-            flex: 1;
+        #username-input,
+        #password-input {
             padding: 10px;
             border: 1px solid #C0C0C0;
             border-radius: 5px;
             background-color: #1B0030;
             color: #C0C0C0;
-            margin-right: 10px;
+            margin-bottom: 10px;
         }
         #set-username-button {
             padding: 10px;
@@ -129,6 +130,44 @@
             border-radius: 50%; /* Make it circular */
             vertical-align: middle; /* Align with text */
         }
+        /* Modal styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+            padding-top: 60px; 
+        }
+        .modal-content {
+            background-color: #2E003E;
+            margin: 5% auto; 
+            padding: 20px;
+            border: 1px solid #C0C0C0;
+            width: 300px; 
+            border-radius: 10px;
+        }
+        .close {
+            color: #C0C0C0;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #username-message {
+            color: #FF0000; /* Red color for error messages */
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -147,7 +186,9 @@
         <div id="chat-window">
             <div id="username-container">
                 <input type="text" id="username-input" placeholder="Set your username..." />
+                <input type="password" id="password-input" placeholder="Set your password..." />
                 <button id="set-username-button" onclick="setUsername()">Set Username</button>
+                <p id="username-message"></p>
             </div>
             <div id="messages">
                 <p>Welcome to the General chat room! Please set your username to start chatting.</p>
@@ -159,69 +200,40 @@
         </div>
     </div>
 
+    <!-- User Profile Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>User Profile</h2>
+            <img class="profile-pic" id="modalProfilePic" src="https://via.placeholder.com/30" alt="Profile Picture" />
+            <p><strong id="modalUsername"></strong></p>
+            <p><strong>Bio:</strong> <span id="modalBio">This user has not set a bio.</span></p>
+            <p><strong>Badge:</strong> <span id="modalBadge">Regular User</span></p>
+            <p><strong>Date Created:</strong> <span id="modalDateCreated"></span></p>
+        </div>
+    </div>
+
     <script>
         let currentRoom = 'General';
         let username = '';
+        let password = '';
         const messagesData = [];
+        const takenUsernames = new Set(); // Set to track taken usernames
 
+        // Function to switch chat rooms
         function switchRoom(room) {
             currentRoom = room;
             loadMessages();
         }
 
+        // Function to set username and password
         function setUsername() {
             username = document.getElementById('username-input').value;
+            password = document.getElementById('password-input').value;
             const messageInput = document.getElementById('message-input');
             const sendButton = document.getElementById('send-button');
             const usernameContainer = document.getElementById('username-container');
+            const usernameMessage = document.getElementById('username-message');
 
-            if (username) {
-                messageInput.disabled = false;
-                sendButton.disabled = false;
-                usernameContainer.style.display = 'none'; // Hide username input after setting it
-                loadMessages();
-            }
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('message-input');
-            const message = input.value;
-            if (message && username) {
-                const messageId = messagesData.length; // Get message ID based on current length
-                messagesData.push({ id: messageId, username: username, content: message }); // Save message
-                input.value = '';
-                displayMessages();
-            }
-        }
-
-        function displayMessages() {
-            const messages = document.getElementById('messages');
-            messages.innerHTML = ''; // Clear current messages
-            messagesData.forEach(msg => {
-                const messageElement = document.createElement('p');
-                messageElement.innerHTML = `
-                    <img class="profile-pic" src="https://via.placeholder.com/30" alt="Profile Picture" />
-                    <strong>${msg.username}</strong>: ${msg.content} 
-                    <button onclick="deleteMessage(${msg.id})" style="color: #C0C0C0; background: none; border: none; cursor: pointer;">&#10006;</button>
-                `;
-                messages.appendChild(messageElement);
-            });
-            messages.scrollTop = messages.scrollHeight; // Scroll to the bottom
-        }
-
-        function deleteMessage(id) {
-            const messageIndex = messagesData.findIndex(msg => msg.id === id);
-            if (messageIndex !== -1) {
-                messagesData.splice(messageIndex, 1); // Remove the message
-                displayMessages(); // Update the displayed messages
-            }
-        }
-
-        function loadMessages() {
-            const messages = document.getElementById('messages');
-            messages.innerHTML = `<p>Welcome to the ${currentRoom} chat room!</p>`;
-            displayMessages();
-        }
-    </script>
-</body>
-</html>
+            if (!username) {
+                usernameMessage.textContent = "Username cannot be empty.";
