@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wyrm Chat Room</title>
     <style>
+        /* (Styling remains largely the same with some updates) */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -168,20 +169,70 @@
             color: #FF0000; /* Red color for error messages */
             margin-top: 10px;
         }
+        #profile-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        #profile-content {
+            background-color: #1B0030;
+            color: #C0C0C0;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            text-align: center;
+        }
+        #profile-content img {
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+        .message {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .message img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        /* Close button for profile modal */
+        #profile-content button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #2E003E;
+            color: #C0C0C0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #profile-content button:hover {
+            background-color: #3E0050;
+        }
     </style>
 </head>
 <body>
     <header>
-        <img id="logo"logononame.webp" alt="Wyrm Logo" /> <!-- Placeholder logo -->
+        <img id="logo" src="logononame.webp" alt="Wyrm Logo" />
         <h1>Wyrm Chat Room</h1>
     </header>
     <div id="container">
         <div id="sidebar">
             <h2>Chat Rooms</h2>
-            <div class="chat-room" onclick="switchRoom('General')">General</div>
+            <div class="chat-room" onclick="switchRoom('Global')">Global Chat</div>
             <div class="chat-room" onclick="switchRoom('Gaming')">Gaming</div>
             <div class="chat-room" onclick="switchRoom('Tech')">Tech</div>
             <div class="chat-room" onclick="switchRoom('Art')">Art</div>
+            <!-- Add an admin button for admins -->
+            <div class="chat-room" id="admin-panel" style="display:none;" onclick="openAdminPanel()">Admin Panel</div>
         </div>
         <div id="chat-window">
             <div id="username-container">
@@ -191,7 +242,7 @@
                 <p id="username-message"></p>
             </div>
             <div id="messages">
-                <p>Welcome to the General chat room! Please set your username to start chatting.</p>
+                <p>Welcome to the Global chat room! Please set your username to start chatting.</p>
             </div>
             <div id="input-container">
                 <input type="text" id="message-input" placeholder="Type your message here..." disabled />
@@ -200,40 +251,149 @@
         </div>
     </div>
 
-    <!-- User Profile Modal -->
-    <div id="userModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>User Profile</h2>
-            <img class="profile-pic" id="modalProfilePic" src="https://via.placeholder.com/30" alt="Profile Picture" />
-            <p><strong id="modalUsername"></strong></p>
-            <p><strong>Bio:</strong> <span id="modalBio">This user has not set a bio.</span></p>
-            <p><strong>Badge:</strong> <span id="modalBadge">Regular User</span></p>
-            <p><strong>Date Created:</strong> <span id="modalDateCreated"></span></p>
+    <!-- Modal for viewing and editing profiles -->
+    <div id="profile-modal">
+        <div id="profile-content">
+            <h3 id="profile-username"></h3>
+            <img id="profile-pic" src="" alt="Profile Picture" width="100" />
+            <p id="profile-bio"></p>
+            <button onclick="closeProfile()">Close</button>
+            <!-- Editable fields for your own profile -->
+            <div id="edit-profile" style="display:none;">
+                <input type="text" id="edit-bio" placeholder="Update your bio" />
+                <input type="file" id="edit-profile-pic" />
+                <button onclick="updateProfile()">Save Changes</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let currentRoom = 'General';
+        let currentRoom = 'Global';
         let username = '';
         let password = '';
-        const messagesData = [];
-        const takenUsernames = new Set(); // Set to track taken usernames
+        let isAdmin = false;  // Modify this for admin users
+        const users = {
+            'admin': { password: 'adminpass', bio: 'Admin of Wyrm', profilePic: 'https://via.placeholder.com/100', isAdmin: true }
+        };
+        const messagesData = {
+            'Global': [],
+            'Gaming': [],
+            'Tech': [],
+            'Art': []
+        };
 
-        // Function to switch chat rooms
         function switchRoom(room) {
             currentRoom = room;
             loadMessages();
         }
 
-        // Function to set username and password
+        function loadMessages() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            messagesData[currentRoom].forEach((msg, index) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                const profilePic = users[msg.user].profilePic || "https://via.placeholder.com/40";
+                messageDiv.innerHTML = `<img src="${profilePic}" alt="Profile Picture" /><strong onclick="viewProfile('${msg.user}')">${msg.user}</strong>: ${msg.text}`;
+                if (msg.user === username) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = "Delete";
+                    deleteBtn.onclick = () => deleteMessage(index);
+                    messageDiv.appendChild(deleteBtn);
+                }
+                messagesDiv.appendChild(messageDiv);
+            });
+        }
+
         function setUsername() {
-            username = document.getElementById('username-input').value;
-            password = document.getElementById('password-input').value;
+            const usernameInput = document.getElementById('username-input').value;
+            const passwordInput = document.getElementById('password-input').value;
             const messageInput = document.getElementById('message-input');
             const sendButton = document.getElementById('send-button');
-            const usernameContainer = document.getElementById('username-container');
             const usernameMessage = document.getElementById('username-message');
 
-            if (!username) {
-                usernameMessage.textContent = "Username cannot be empty.";
+            if (!usernameInput || !passwordInput) {
+                usernameMessage.textContent = "Username and password cannot be empty.";
+                return;
+            }
+
+            if (users[usernameInput]) {
+                usernameMessage.textContent = "Username is already taken.";
+                return;
+            }
+
+            username = usernameInput;
+            password = passwordInput;
+            users[username] = { password: password, bio: '', profilePic: '' };
+
+            usernameMessage.textContent = "";
+            messageInput.disabled = false;
+            sendButton.disabled = false;
+
+            document.getElementById('username-container').style.display = 'none';
+
+            if (isAdmin) {
+                document.getElementById('admin-panel').style.display = 'block';
+            }
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const text = messageInput.value;
+
+            if (!text || !username) return;
+
+            messagesData[currentRoom].push({ user: username, text: text });
+            loadMessages();
+            messageInput.value = '';
+        }
+
+        function deleteMessage(index) {
+            messagesData[currentRoom].splice(index, 1);
+            loadMessages();
+        }
+
+        function viewProfile(user) {
+            const profile = users[user];
+            if (!profile) return;
+
+            document.getElementById('profile-username').textContent = user;
+            document.getElementById('profile-bio').textContent = profile.bio;
+            document.getElementById('profile-pic').src = profile.profilePic || "https://via.placeholder.com/100";
+            document.getElementById('profile-modal').style.display = 'flex';
+
+            if (user === username) {
+                document.getElementById('edit-profile').style.display = 'block';
+            } else {
+                document.getElementById('edit-profile').style.display = 'none';
+            }
+        }
+
+        function closeProfile() {
+            document.getElementById('profile-modal').style.display = 'none';
+        }
+
+        function updateProfile() {
+            const newBio = document.getElementById('edit-bio').value;
+            const newProfilePic = document.getElementById('edit-profile-pic').files[0];
+
+            if (newBio) users[username].bio = newBio;
+            if (newProfilePic) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    users[username].profilePic = e.target.result;
+                    viewProfile(username);
+                };
+                reader.readAsDataURL(newProfilePic);
+            }
+
+            closeProfile();
+        }
+
+        function openAdminPanel() {
+            alert("Admin Panel will go here!");
+            // Implement functionality for admin actions like viewing all users, messages, banning, etc.
+        }
+    </script>
+</body>
+</html>
